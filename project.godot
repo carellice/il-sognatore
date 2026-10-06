@@ -1,0 +1,52 @@
+; Engine configuration file.
+; Il Sognatore - platform 2D in pixel art (vedi docs/GDD.md)
+
+config_version=5
+
+[application]
+
+config/name="Il Sognatore"
+config/description="Platform 2D in pixel art: 10 mondi da 10 livelli generati da un seed."
+config/version="0.1.12"
+run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+run/max_fps=60
+config/icon="res://icon.png"
+config/quit_on_go_back=false
+boot_splash/show_image=false
+boot_splash/bg_color=Color(0.03, 0.02, 0.06, 1)
+
+[autoload]
+
+G="*res://src/core/G.gd"
+Save="*res://src/core/SaveSys.gd"
+T="*res://src/core/Loc.gd"
+Art="*res://src/core/Art.gd"
+Snd="*res://src/core/Snd.gd"
+
+[display]
+
+window/size/viewport_width=480
+window/size/viewport_height=270
+window/size/window_width_override=1440
+window/size/window_height_override=810
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/stretch/scale_mode="fractional"
+window/handheld/orientation=4
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+
+[physics]
+
+common/physics_ticks_per_second=60
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/canvas_textures/default_texture_filter=0
+environment/defaults/default_clear_color=Color(0.04, 0.03, 0.08, 1)
+textures/vram_compression/import_etc2_astc=true
