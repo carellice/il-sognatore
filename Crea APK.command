@@ -1,5 +1,6 @@
 #!/bin/bash
-# Doppio clic: incrementa la versione e genera l'APK Android di debug in build/.
+# Doppio clic: incrementa la versione, genera l'APK Android di debug in build/
+# e lo pubblica tra le release di GitHub, cancellando le release precedenti.
 # La versione sta in export_presets.cfg (version/code e version/name) e in project.godot.
 cd "$(dirname "$0")" || exit 1
 
@@ -9,6 +10,29 @@ if [ ! -x "$GODOT" ]; then
 	read -r -p "Premi Invio per chiudere."
 	exit 1
 fi
+
+REPO="carellice/il-sognatore"
+GH="$(command -v gh || echo /opt/homebrew/bin/gh)"
+
+# pubblica l'APK come nuova release e poi cancella tutte le altre (tag compresi)
+publish() {
+	local tag="v$NAME" old
+	if [ ! -x "$GH" ]; then
+		echo "GitHub CLI non trovata, APK non pubblicato. Installala con: brew install gh"
+		return 1
+	fi
+	echo "Pubblico $tag su github.com/$REPO..."
+	if ! "$GH" release create "$tag" "$APK" --repo "$REPO" --title "Il Sognatore $NAME" \
+		--notes "Versione $NAME (codice $CODE)" --latest; then
+		echo "Pubblicazione fallita: l'APK resta in build/, le release vecchie non sono state toccate."
+		return 1
+	fi
+	"$GH" release list --repo "$REPO" --limit 100 --json tagName --jq '.[].tagName' | while read -r old; do
+		[ "$old" = "$tag" ] && continue
+		"$GH" release delete "$old" --repo "$REPO" --yes --cleanup-tag && echo "Cancellata la release $old"
+	done
+	echo "Pubblicato: https://github.com/$REPO/releases/tag/$tag"
+}
 
 cp export_presets.cfg export_presets.cfg.bak
 cp project.godot project.godot.bak
@@ -44,6 +68,7 @@ if [ -s "$APK" ] && ! grep -q "ERROR" build/export.log; then
 	rm -f export_presets.cfg.bak project.godot.bak
 	cp "$APK" build/il-sognatore.apk
 	echo "Fatto: $APK ($(du -h "$APK" | cut -f1 | tr -d ' '))"
+	publish
 	open -R "$APK"
 else
 	# export fallito: la versione torna quella di prima
